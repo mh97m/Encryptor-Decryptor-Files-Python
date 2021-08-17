@@ -1,5 +1,5 @@
 os
-cryptography.fernet
+cryptography
 pconst
 re
 time
