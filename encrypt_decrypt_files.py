@@ -6,23 +6,27 @@ from cryptography.fernet import Fernet
 import asyncio
 import concurrent.futures
 
-async def encrypt_file(filename, key):
+async def encrypt_file(filename, key, num_encryption):
     with open(filename, 'rb') as file:
         file_data = file.read()
-        
-    fernet = Fernet(key)
-    encrypted_data = fernet.encrypt(file_data)
-        
+
+    for i in range(num_encryption):
+        fernet = Fernet(key)
+        encrypted_data = fernet.encrypt(file_data)
+        file_data = encrypted_data
+
     with open(filename, 'wb') as file:
         file.write(encrypted_data)
 
-async def decrypt_file(filename, key):
+async def decrypt_file(filename, key, num_encryption):
     with open(filename, 'rb') as file:
         encrypted_data = file.read()
-        
-    fernet = Fernet(key)
-    decrypted_data = fernet.decrypt(encrypted_data)
-        
+
+    for i in range(num_encryption):
+        fernet = Fernet(key)
+        decrypted_data = fernet.decrypt(encrypted_data)
+        encrypted_data = decrypted_data
+
     with open(filename, 'wb') as file:
         file.write(decrypted_data)
 
@@ -36,11 +40,12 @@ def get_args():
     parser = argparse.ArgumentParser(description="Encrypt or decrypt all files in a directory")
     parser.add_argument("mode", choices=["encrypt", "decrypt"], help="Mode to run the program in (encrypt or decrypt)")
     parser.add_argument("directory", help="Directory to process")
+    parser.add_argument("num_encryption", type=int, help="Number of times each file should be encrypted or decrypted")
     return parser.parse_args()
 
 async def main():
     args = get_args()
-    
+
     key_file = os.path.join(os.getcwd(), 'key.txt')
     if os.path.exists(key_file):
         with open(key_file, 'rb') as file:
@@ -56,14 +61,14 @@ async def main():
             for root, _, files in os.walk(args.directory):
                 for file in files:
                     filename = os.path.join(root, file)
-                    task = loop.create_task(encrypt_file(filename, key))
+                    task = loop.create_task(encrypt_file(filename, key, args.num_encryption))
                     tasks.append(task)
             print("Encryption completed!")
         elif args.mode == "decrypt":
             for root, _, files in os.walk(args.directory):
                 for file in files:
                     filename = os.path.join(root, file)
-                    task = loop.create_task(decrypt_file(filename, key))
+                    task = loop.create_task(decrypt_file(filename, key, args.num_encryption))
                     tasks.append(task)
             print("Decryption completed!")
 
@@ -71,8 +76,3 @@ async def main():
 
 if __name__ == '__main__':
     asyncio.run(main())
-
-# usage
-# python encrypt_decrypt_files.py encrypt /path/to/directory
-# python encrypt_decrypt_files.py decrypt /path/to/directory
-# key.txt generate in the same directory

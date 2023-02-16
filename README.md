@@ -1,20 +1,41 @@
-Encrypte and decrypt files
-=========================================================================
 
-This Code Encrypt and Decrypte files of directory taht you gave for 3 times.
-You can change the number of encryption in the code.
+# Encrypte , Decrypt Files
 
-key.txt generated in the same directory of the python file that include your key for decryption.
+This Code Encrypt and Decrypte files of directory that you gave for several times.
 
-This code wrote with asyncio and threading together for fastest run that ever make...
+Key is generate when run encrypt files and stored in key.txt in the same directory of the python file.
+
+## Performance
+
+This code wrote with asyncio and threading together for fastest run that ever can make...
 
 In this code, the main bottleneck is the I/O operations of reading and writing files, which is why concurrent.futures is used. However, if the code were doing more CPU-bound tasks, multiprocessing might be a better choice.
 
 
-usage: 
-  -encrypt_decrypt_files.py [-h] {encrypt,decrypt} directory 
+## Usage
+
+### Syntax :
+
+```bashe
+encrypt_decrypt_files.py [-h] {encrypt,decrypt} directory num_encryption
+```
+
+### Encrypt :
+
+    -this is example of encrypting files for 3 time
+```bash
+python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
+```
 
 
-example: 
-  - python encrypt_decrypt_files.py encrypt /path/to/directory
-  - python encrypt_decrypt_files.py decrypt /path/to/directory
+### Decrypt :
+
+    -this is example of decrypting files for 3 time
+```bash
+python3 encrypt_decrypt_files.py decrypt /home/user/directory 3
+```
+
+
+#### Note.
+
+    For decrypt files you must enter exact the number time that you encrypt files.
