@@ -23,6 +23,7 @@ encrypt_decrypt_files.py [-h] {encrypt,decrypt} directory num_encryption
 ### Encrypt :
 
     -this is example of encrypting files for 3 time
+
 ```bash
 python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
 ```
@@ -31,6 +32,7 @@ python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
 ### Decrypt :
 
     -this is example of decrypting files for 3 time
+
 ```bash
 python3 encrypt_decrypt_files.py decrypt /home/user/directory 3
 ```
