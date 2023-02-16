@@ -14,6 +14,10 @@ In this code, the main bottleneck is the I/O operations of reading and writing f
 
 ## Usage
 
+#### note . 
+python3 is prefix for execute python files in linux.
+py is prefix for execute python files in windows.
+
 ### Syntax :
 
 ```bashe
@@ -22,7 +26,7 @@ encrypt_decrypt_files.py [-h] {encrypt,decrypt} directory num_encryption
 
 ### Encrypt :
 
-this is example of encrypting files for 3 time
+this is example of encrypting files for 3 time.
 
 ```bash
 python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
@@ -31,13 +35,13 @@ python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
 
 ### Decrypt :
 
-this is example of decrypting files for 3 time
+this is example of decrypting files for 3 time.
 
 ```bash
 python3 encrypt_decrypt_files.py decrypt /home/user/directory 3
 ```
 
 
-#### Note.
+#### Note .
 
 For decrypt files you must enter exact the number time that you encrypt files.
