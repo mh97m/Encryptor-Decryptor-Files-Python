@@ -14,7 +14,7 @@ In this code, the main bottleneck is the I/O operations of reading and writing f
 
 ## Usage
 
-#### note . 
+#### Note . 
 python3 is prefix for execute python files in linux.
 py is prefix for execute python files in windows.
 
