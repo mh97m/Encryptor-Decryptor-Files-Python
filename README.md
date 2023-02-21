@@ -48,8 +48,4 @@ python3 encrypt_decrypt_files.py decrypt /home/user/directory 3
 
 For decrypt files you must enter exact the number time that you encrypt files.
 
-- Python encryptor
-- File encryption
-- Encrypting files
-- Encrypt using python
-- Encrypt files using python
+-Python encryptor-File encryption-Encrypting files-Encrypt using python-Encrypt files using python
