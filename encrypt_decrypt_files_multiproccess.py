@@ -2,10 +2,9 @@ import os
 import datetime
 import argparse
 from cryptography.fernet import Fernet
-import asyncio
-# import concurrent.futures
+import multiprocessing
 
-async def encrypt_file(filename, key, num_encryption):
+def encrypt_file(filename, key, num_encryption):
     with open(filename, 'rb') as file:
         file_data = file.read()
 
@@ -16,7 +15,7 @@ async def encrypt_file(filename, key, num_encryption):
         with open(filename, 'wb') as file:
             file.write(encrypted_data)
 
-async def decrypt_file(filename, key, num_encryption):
+def decrypt_file(filename, key, num_encryption):
     with open(filename, 'rb') as file:
         encrypted_data = file.read()
 
@@ -40,7 +39,16 @@ def get_args():
     parser.add_argument("num_encryption", type=int, help="Number of times each file should be encrypted or decrypted")
     return parser.parse_args()
 
-async def main():
+def process_files(directory, key, num_encryption, mode):
+    for root, _, files in os.walk(directory):
+        for file in files:
+            filename = os.path.join(root, file)
+            if mode == "encrypt":
+                encrypt_file(filename, key, num_encryption)
+            elif mode == "decrypt":
+                decrypt_file(filename, key, num_encryption)
+
+def main():
     args = get_args()
 
     key_file = os.path.join(os.getcwd(), 'key.txt')
@@ -50,30 +58,19 @@ async def main():
     else:
         key = create_key(key_file)
 
-    async_loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(async_loop)
+    processes = []
+    for i in range(multiprocessing.cpu_count()):
+        p = multiprocessing.Process(target=process_files, args=(args.directory, key, args.num_encryption, args.mode))
+        processes.append(p)
+        p.start()
 
-    tasks = []
-
-    if args.mode == "encrypt":
-        for root, _, files in os.walk(args.directory):
-            for file in files:
-                filename = os.path.join(root, file)
-                tasks.append(asyncio.ensure_future(
-                    encrypt_file(filename, key, args.num_encryption)))
-    elif args.mode == "decrypt":
-        for root, _, files in os.walk(args.directory):
-            for file in files:
-                filename = os.path.join(root, file)
-                tasks.append(asyncio.ensure_future(
-                    decrypt_file(filename, key, args.num_encryption)))
-
-    await asyncio.gather(*tasks)
+    for p in processes:
+        p.join()
 
 if __name__ == '__main__':
     start = datetime.datetime.now()
 
-    asyncio.run(main())
+    main()
 
     end = datetime.datetime.now()
 
