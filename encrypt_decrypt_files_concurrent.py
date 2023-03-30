@@ -1,8 +1,10 @@
+#!/usr/bin/env python
 import os
+import sys
+import time
 import argparse
 from cryptography.fernet import Fernet
 from concurrent.futures import ThreadPoolExecutor
-import time
 
 
 class EncryptorDecryptor:
@@ -49,18 +51,22 @@ class EncryptorDecryptor:
     def encryptData(self, file_name):
         with open(file_name, 'rb') as file:
             file_data = file.read()
+        file_size = sys.getsizeof(file_data)
         for key in self.keys:
             fernet = Fernet(key)
             file_data = fernet.encrypt(file_data)
+            time.sleep(file_size / 100000000)
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 
     def decryptData(self, file_name):
         with open(file_name, 'rb') as file:
             file_data = file.read()
+        file_size = sys.getsizeof(file_data)
         for key in reversed(self.keys):
             fernet = Fernet(key)
             file_data = fernet.decrypt(file_data)
+            time.sleep(file_size / 100000000)
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 

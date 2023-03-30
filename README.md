@@ -3,7 +3,7 @@
 
 This Code Encrypt and Decrypte files of directory that you gave for several times.
 
-Key is generate when run encrypt files and stored in key.txt in the same directory of the python file.
+Keys are generate when run encrypt files and stored in key.txt in the same directory of the python file.
 
 ## Performance
 
@@ -31,7 +31,7 @@ encrypt_decrypt_files.py [-h] {encrypt,decrypt} directory num_encryption
 this is example of encrypting files for 3 time.
 
 ```bash
-python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
+python3 encrypt_decrypt_files.py --mode encrypt --dir /home/user/directory --num-enc 3 --new-key true
 ```
 
 
@@ -40,7 +40,7 @@ python3 encrypt_decrypt_files.py encrypt /home/user/directory 3
 this is example of decrypting files for 3 time.
 
 ```bash
-python3 encrypt_decrypt_files.py decrypt /home/user/directory 3
+python3 encrypt_decrypt_files.py --mode decrypt --dir /home/user/directory
 ```
 
 

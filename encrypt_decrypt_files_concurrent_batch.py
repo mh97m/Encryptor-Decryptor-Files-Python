@@ -1,8 +1,10 @@
+#!/usr/bin/env python
 import os
+import sys
+import time
 import argparse
 from cryptography.fernet import Fernet
 from concurrent.futures import ThreadPoolExecutor
-import time
 
 
 class EncryptorDecryptor:
@@ -49,20 +51,32 @@ class EncryptorDecryptor:
     def encryptData(self, file_name):
         with open(file_name, 'rb') as file:
             file_data = file.read()
-        for key in self.keys:
-            fernet = Fernet(key)
-            file_data = fernet.encrypt(file_data)
+        new_file_data = b''
+        file_size = sys.getsizeof(file_data)
+        for i in range(0, len(file_data), self.chunk_size):
+            data = file_data[i:i+self.chunk_size]
+            for key in self.keys:
+                fernet = Fernet(key)
+                data = fernet.encrypt(data)
+                time.sleep(file_size / 100000000)
+            new_file_data += data
         with open(file_name, 'wb') as new_file:
-            new_file.write(file_data)
+            new_file.write(new_file_data)
 
     def decryptData(self, file_name):
         with open(file_name, 'rb') as file:
             file_data = file.read()
-        for key in reversed(self.keys):
-            fernet = Fernet(key)
-            file_data = fernet.decrypt(file_data)
+        new_file_data = b''
+        file_size = sys.getsizeof(file_data)
+        for i in range(0, len(file_data), self.chunk_size):
+            data = file_data[i:i+self.chunk_size]
+            for key in reversed(self.keys):
+                fernet = Fernet(key)
+                data = fernet.decrypt(data)
+                time.sleep(file_size / 100000000)
+            new_file_data += data
         with open(file_name, 'wb') as new_file:
-            new_file.write(file_data)
+            new_file.write(new_file_data)
 
     def execute(self):
         with ThreadPoolExecutor() as executor:
