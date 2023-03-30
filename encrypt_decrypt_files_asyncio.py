@@ -16,8 +16,7 @@ class EncryptorDecryptor:
         self.directory = args.dir
         self.new_key = args.new_key
 
-        self.keys = []
-        args = self.createKeys()
+        self.keys = self.createKeys()
 
     def getArgs(self):
         parser = argparse.ArgumentParser(
@@ -46,7 +45,7 @@ class EncryptorDecryptor:
         else:
             print('Key encryption not exists')
             quit()
-        self.keys = keys.split(b' - ')[0:-1]
+        return keys.split(b' - ')[0:-1]
 
     def encryptData(self, file_name):
         with open(file_name, 'rb') as file:

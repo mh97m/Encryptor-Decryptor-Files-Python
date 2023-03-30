@@ -14,10 +14,10 @@ class EncryptorDecryptor:
         self.mode = args.mode
         self.num_encryption = args.num_enc
         self.directory = args.dir
+        self.chunk_size = args.chunk
         self.new_key = args.new_key
 
-        self.keys = []
-        args = self.createKeys()
+        self.keys = self.createKeys()
 
     def getArgs(self):
         parser = argparse.ArgumentParser(
@@ -27,6 +27,7 @@ class EncryptorDecryptor:
         parser.add_argument('--dir', help='Directory to process')
         parser.add_argument('--num-enc', type=int, default=1,
                             help='Number of times each file should be encrypted or decrypted')
+        parser.add_argument('--chunk', type=int, default=1000, help='Number of chunk file into pieces')
         parser.add_argument('--new-key', type=bool, default=False,
                             help='Make new key for encryption')
         return parser.parse_args()
@@ -46,7 +47,7 @@ class EncryptorDecryptor:
         else:
             print('Key encryption not exists')
             quit()
-        self.keys = keys.split(b' - ')[0:-1]
+        return keys.split(b' - ')[0:-1]
 
     def encryptData(self, file_name):
         with open(file_name, 'rb') as file:
