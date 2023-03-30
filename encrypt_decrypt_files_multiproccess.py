@@ -75,9 +75,9 @@ class EncryptorDecryptor:
             for file in files:
                 file_name = os.path.join(root, file)
                 if self.mode == 'encrypt':
-                    process = multiprocessing.Process(target=self.encryptData, args=(file_name))
+                    process = multiprocessing.Process(target=self.encryptData, args=(file_name,))
                 elif self.mode == 'decrypt':
-                    process = multiprocessing.Process(target=self.decryptData, args=(file_name))
+                    process = multiprocessing.Process(target=self.decryptData, args=(file_name,))
                 processes.append(process)
                 process.start()
             for process in processes:

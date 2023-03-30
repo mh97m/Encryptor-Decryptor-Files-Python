@@ -18,6 +18,9 @@ class EncryptorDecryptor:
 
         self.keys = self.createKeys()
 
+        # self.async_loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(self.async_loop)
+
     def getArgs(self):
         parser = argparse.ArgumentParser(
             description='Encrypt or decrypt all files in a directory')

