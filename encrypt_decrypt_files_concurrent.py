@@ -1,138 +1,79 @@
 import os
-
 import argparse
-
 from cryptography.fernet import Fernet
-
 from concurrent.futures import ThreadPoolExecutor
-
 import time
 
-def encrypt_file(filename, key, num_encryption):
 
-    with open(filename, 'rb') as file:
+class EncryptorDecryptor:
 
-        file_data = file.read()
+    def __init__(self) -> None:
+        args = self.getArgs()
+        self.mode = args.mode
+        self.num_encryption = args.num_enc
+        self.directory = args.dir
+        self.new_key = args.new_key
 
-    for i in range(num_encryption):
+        self.keys = []
+        args = self.createKeys()
 
-        fernet = Fernet(key)
+    def getArgs(self):
+        parser = argparse.ArgumentParser(
+            description='Encrypt or decrypt all files in a directory')
+        parser.add_argument('--mode', choices=[
+                            'encrypt', 'decrypt'], help='Mode to run the program in (encrypt or decrypt)')
+        parser.add_argument('--dir', help='Directory to process')
+        parser.add_argument('--num-enc', type=int, default=1,
+                            help='Number of times each file should be encrypted or decrypted')
+        parser.add_argument('--new-key', type=bool, default=False,
+                            help='Make new key for encryption')
+        return parser.parse_args()
 
-        encrypted_data = fernet.encrypt(file_data)
+    def createKeys(self):
+        keys_file = os.path.join(os.getcwd(), 'key.txt')
+        if os.path.exists(keys_file) and not self.new_key:
+            with open(keys_file, 'rb') as file:
+                keys = file.read()
+        else:
+            keys = b''
+            for i in range(0, self.num_encryption):
+                key = Fernet.generate_key()
+                keys += key + b' - '
+            with open(keys_file, 'wb') as file:
+                file.write(keys)
+        self.keys = keys.split(b' - ')[0:-1]
 
-    with open(filename, 'wb') as file:
+    def encryptData(self, file_name):
+        with open(file_name, 'rb') as file:
+            file_data = file.read()
+        for key in self.keys:
+            fernet = Fernet(key)
+            file_data = fernet.encrypt(file_data)
+        with open(file_name, 'wb') as new_file:
+            new_file.write(file_data)
 
-        file.write(encrypted_data)
+    def decryptData(self, file_name):
+        with open(file_name, 'rb') as file:
+            file_data = file.read()
+        for key in reversed(self.keys):
+            fernet = Fernet(key)
+            file_data = fernet.decrypt(file_data)
+        with open(file_name, 'wb') as new_file:
+            new_file.write(file_data)
 
-def decrypt_file(filename, key, num_encryption):
-
-    with open(filename, 'rb') as file:
-
-        encrypted_data = file.read()
-
-    for i in range(num_encryption):
-
-        fernet = Fernet(key)
-
-        decrypted_data = fernet.decrypt(encrypted_data)
-
-    with open(filename, 'wb') as file:
-
-        file.write(decrypted_data)
-
-def create_key(key_file):
-
-    key = Fernet.generate_key()
-
-    with open(key_file, 'wb') as file:
-
-        file.write(key)
-
-    return key
-
-def get_args():
-
-    parser = argparse.ArgumentParser(description="Encrypt or decrypt all files in a directory")
-
-    parser.add_argument("mode", choices=["encrypt", "decrypt"], help="Mode to run the program in (encrypt or decrypt)")
-
-    parser.add_argument("directory", help="Directory to process")
-
-    parser.add_argument("num_encryption", type=int, help="Number of times each file should be encrypted or decrypted")
-
-    return parser.parse_args()
-
-def main():
-
-    args = get_args()
-
-    key_file = os.path.join(os.getcwd(), 'key.txt')
-
-    if os.path.exists(key_file):
-
-        with open(key_file, 'rb') as file:
-
-            key = file.read()
-
-    else:
-
-        key = create_key(key_file)
-
-    with ThreadPoolExecutor() as executor:
-
-        if args.mode == "encrypt":
-
-            for root, _, files in os.walk(args.directory):
-
+    def execute(self):
+        with ThreadPoolExecutor() as executor:
+            for root, _, files in os.walk(self.directory):
                 for file in files:
+                    file_name = os.path.join(root, file)
+                    if self.mode == 'encrypt':
+                        executor.submit(self.encryptData, file_name)
+                    elif self.mode == 'decrypt':
+                        executor.submit(self.decryptData, file_name)
 
-                    filename = os.path.join(root, file)
-
-                    executor.submit(encrypt_file, filename, key, args.num_encryption)
-
-        elif args.mode == "decrypt":
-
-            for root, _, files in os.walk(args.directory):
-
-                for file in files:
-
-                    filename = os.path.join(root, file)
-
-                    executor.submit(decrypt_file, filename, key, args.num_encryption)
-
-def main():
-    args = get_args()
-    key_file = os.path.join(os.getcwd(), 'key.txt')
-
-    if os.path.exists(key_file):
-        with open(key_file, 'rb') as file:
-            key = file.read()
-    else:
-        key = create_key(key_file)
-
-    with ThreadPoolExecutor() as executor:
-        if args.mode == "encrypt":
-            for root, _, files in os.walk(args.directory):
-                file_paths = [os.path.join(root, file) for file in files]
-                for i in range(0, len(file_paths), batch_size):
-                    batch = file_paths[i:i+batch_size]
-                    for file_path in batch:
-                        executor.submit(encrypt_file, file_path, key, args.num_encryption)
-        elif args.mode == "decrypt":
-            for root, _, files in os.walk(args.directory):
-                file_paths = [os.path.join(root, file) for file in files]
-                for i in range(0, len(file_paths), batch_size):
-                    batch = file_paths[i:i+batch_size]
-                    for file_path in batch:
-                        executor.submit(decrypt_file, file_path, key, args.num_encryption)
 
 if __name__ == '__main__':
-
     start = time.monotonic()
-
-    main()
-
+    EncryptorDecryptor().execute()
     end = time.monotonic()
-
     print(f"Operation completed in: {end-start} seconds")
-

@@ -1,7 +1,7 @@
 import os
 import argparse
 from cryptography.fernet import Fernet
-import multiprocessing
+from concurrent.futures import ThreadPoolExecutor
 import time
 
 
@@ -16,6 +16,7 @@ class EncryptorDecryptor:
 
         self.keys = []
         args = self.createKeys()
+        self.new_file_data = b""
 
     def getArgs(self):
         parser = argparse.ArgumentParser(
@@ -43,41 +44,52 @@ class EncryptorDecryptor:
                 file.write(keys)
         self.keys = keys.split(b' - ')[0:-1]
 
-    def encryptData(self, file_name):
-        with open(file_name, 'rb') as file:
-            file_data = file.read()
+    def encryptData(self, data):
         for key in self.keys:
             fernet = Fernet(key)
-            file_data = fernet.encrypt(file_data)
-        with open(file_name, 'wb') as new_file:
-            new_file.write(file_data)
+            data = fernet.encrypt(data)
+        self.new_file_data = data
 
-    def decryptData(self, file_name):
-        with open(file_name, 'rb') as file:
-            file_data = file.read()
+    def decryptData(self, data):
         for key in reversed(self.keys):
             fernet = Fernet(key)
-            file_data = fernet.decrypt(file_data)
-        with open(file_name, 'wb') as new_file:
-            new_file.write(file_data)
+            data = fernet.decrypt(data)
+        self.new_file_data = data
 
     def execute(self):
-        for root, _, files in os.walk(self.directory):
-            processes = []
-            for file in files:
-                file_name = os.path.join(root, file)
-                if self.mode == 'encrypt':
-                    process = multiprocessing.Process(target=self.encryptData, args=(file_name))
-                elif self.mode == 'decrypt':
-                    process = multiprocessing.Process(target=self.decryptData, args=(file_name))
-                processes.append(process)
-                process.start()
-            for process in processes:
-                process.join()
-
+        with ThreadPoolExecutor() as executor:
+            for root, _, files in os.walk(self.directory):
+                for file in files:
+                    filename = os.path.join(root, file)
+                    with open(filename, 'rb') as file:
+                        file_data = file.read()
+                        if self.mode == 'encrypt':
+                            executor.submit(self.encryptData, file_data)
+                        elif self.mode == 'decrypt':
+                            executor.submit(self.decryptData, file_data)
+        with open(filename, 'wb') as new_file:
+            new_file.write(self.new_file_data)
 
 if __name__ == '__main__':
     start = time.monotonic()
     EncryptorDecryptor().execute()
     end = time.monotonic()
     print(f"Operation completed in: {end-start} seconds")
+
+
+        # with ThreadPoolExecutor() as executor:
+        #     for root, _, files in os.walk(self.directory):
+        #         for file in files:
+        #             filename = os.path.join(root, file)
+        #             with open(filename, 'rb') as file:
+        #                 file_data = file.read()
+        #                 for i in range(0, len(file_data), self.chunk_size):
+        #                     data = file_data[i:i+self.chunk_size]
+        #                     if self.mode == 'encrypt':
+        #                         executor.submit(self.encryptData, data)
+        #                     elif self.mode == 'decrypt':
+        #                         executor.submit(self.decryptData, data)
+        #             print(self.new_file_data, self.key)
+        #             quit()
+        #             with open(filename, 'wb') as new_file:
+        #                 new_file.write(self.new_file_data)
