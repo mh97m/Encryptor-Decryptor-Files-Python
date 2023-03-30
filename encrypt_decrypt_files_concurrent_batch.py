@@ -16,7 +16,6 @@ class EncryptorDecryptor:
 
         self.keys = []
         args = self.createKeys()
-        self.new_file_data = b""
 
     def getArgs(self):
         parser = argparse.ArgumentParser(
@@ -32,43 +31,49 @@ class EncryptorDecryptor:
 
     def createKeys(self):
         keys_file = os.path.join(os.getcwd(), 'key.txt')
-        if os.path.exists(keys_file) and not self.new_key:
-            with open(keys_file, 'rb') as file:
-                keys = file.read()
-        else:
+        if self.new_key and self.mode == 'encrypt':
             keys = b''
             for i in range(0, self.num_encryption):
                 key = Fernet.generate_key()
                 keys += key + b' - '
             with open(keys_file, 'wb') as file:
                 file.write(keys)
+        elif os.path.exists(keys_file):
+            with open(keys_file, 'rb') as file:
+                keys = file.read()
+        else:
+            print('Key encryption not exists')
+            quit()
         self.keys = keys.split(b' - ')[0:-1]
 
-    def encryptData(self, data):
+    def encryptData(self, file_name):
+        with open(file_name, 'rb') as file:
+            file_data = file.read()
         for key in self.keys:
             fernet = Fernet(key)
-            data = fernet.encrypt(data)
-        self.new_file_data = data
+            file_data = fernet.encrypt(file_data)
+        with open(file_name, 'wb') as new_file:
+            new_file.write(file_data)
 
-    def decryptData(self, data):
+    def decryptData(self, file_name):
+        with open(file_name, 'rb') as file:
+            file_data = file.read()
         for key in reversed(self.keys):
             fernet = Fernet(key)
-            data = fernet.decrypt(data)
-        self.new_file_data = data
+            file_data = fernet.decrypt(file_data)
+        with open(file_name, 'wb') as new_file:
+            new_file.write(file_data)
 
     def execute(self):
         with ThreadPoolExecutor() as executor:
             for root, _, files in os.walk(self.directory):
                 for file in files:
-                    filename = os.path.join(root, file)
-                    with open(filename, 'rb') as file:
-                        file_data = file.read()
-                        if self.mode == 'encrypt':
-                            executor.submit(self.encryptData, file_data)
-                        elif self.mode == 'decrypt':
-                            executor.submit(self.decryptData, file_data)
-        with open(filename, 'wb') as new_file:
-            new_file.write(self.new_file_data)
+                    file_name = os.path.join(root, file)
+                    if self.mode == 'encrypt':
+                        executor.submit(self.encryptData, file_name)
+                    elif self.mode == 'decrypt':
+                        executor.submit(self.decryptData, file_name)
+
 
 if __name__ == '__main__':
     start = time.monotonic()

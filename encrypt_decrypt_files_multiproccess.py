@@ -31,16 +31,19 @@ class EncryptorDecryptor:
 
     def createKeys(self):
         keys_file = os.path.join(os.getcwd(), 'key.txt')
-        if os.path.exists(keys_file) and not self.new_key:
-            with open(keys_file, 'rb') as file:
-                keys = file.read()
-        else:
+        if self.new_key and self.mode == 'encrypt':
             keys = b''
             for i in range(0, self.num_encryption):
                 key = Fernet.generate_key()
                 keys += key + b' - '
             with open(keys_file, 'wb') as file:
                 file.write(keys)
+        elif os.path.exists(keys_file):
+            with open(keys_file, 'rb') as file:
+                keys = file.read()
+        else:
+            print('Key encryption not exists')
+            quit()
         self.keys = keys.split(b' - ')[0:-1]
 
     def encryptData(self, file_name):
