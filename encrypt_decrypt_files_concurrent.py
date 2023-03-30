@@ -100,6 +100,32 @@ def main():
 
                     executor.submit(decrypt_file, filename, key, args.num_encryption)
 
+def main():
+    args = get_args()
+    key_file = os.path.join(os.getcwd(), 'key.txt')
+
+    if os.path.exists(key_file):
+        with open(key_file, 'rb') as file:
+            key = file.read()
+    else:
+        key = create_key(key_file)
+
+    with ThreadPoolExecutor() as executor:
+        if args.mode == "encrypt":
+            for root, _, files in os.walk(args.directory):
+                file_paths = [os.path.join(root, file) for file in files]
+                for i in range(0, len(file_paths), batch_size):
+                    batch = file_paths[i:i+batch_size]
+                    for file_path in batch:
+                        executor.submit(encrypt_file, file_path, key, args.num_encryption)
+        elif args.mode == "decrypt":
+            for root, _, files in os.walk(args.directory):
+                file_paths = [os.path.join(root, file) for file in files]
+                for i in range(0, len(file_paths), batch_size):
+                    batch = file_paths[i:i+batch_size]
+                    for file_path in batch:
+                        executor.submit(decrypt_file, file_path, key, args.num_encryption)
+
 if __name__ == '__main__':
 
     start = time.monotonic()
