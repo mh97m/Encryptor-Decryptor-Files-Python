@@ -47,7 +47,7 @@ class EncryptorDecryptor:
                 keys = file.read()
         else:
             print('Key encryption not exists')
-            quit()
+            exit()
         return keys.split(b' - ')[0:-1]
 
     def encryptData(self, file_name):
@@ -57,7 +57,7 @@ class EncryptorDecryptor:
         for key in self.keys:
             fernet = Fernet(key)
             file_data = fernet.encrypt(file_data)
-            time.sleep(file_size / 100000000)
+            time.sleep(file_size / (100  * 1024 * 1024))
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 
@@ -68,7 +68,7 @@ class EncryptorDecryptor:
         for key in reversed(self.keys):
             fernet = Fernet(key)
             file_data = fernet.decrypt(file_data)
-            time.sleep(file_size / 100000000)
+            time.sleep(file_size / (100  * 1024 * 1024))
         with open(file_name, 'wb') as new_file:
             new_file.write(file_data)
 

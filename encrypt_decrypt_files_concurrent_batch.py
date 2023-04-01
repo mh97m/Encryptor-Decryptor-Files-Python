@@ -14,7 +14,7 @@ class EncryptorDecryptor:
         self.mode = args.mode
         self.num_encryption = args.num_enc
         self.directory = args.dir
-        self.chunk_size = args.chunk
+        self.chunk_size = 1024 * 1024 * 1024
         self.new_key = args.new_key
 
         self.keys = self.createKeys()
@@ -27,7 +27,6 @@ class EncryptorDecryptor:
         parser.add_argument('--dir', help='Directory to process')
         parser.add_argument('--num-enc', type=int, default=1,
                             help='Number of times each file should be encrypted or decrypted')
-        parser.add_argument('--chunk', type=int, default=1000, help='Number of chunk file into pieces')
         parser.add_argument('--new-key', type=bool, default=False,
                             help='Make new key for encryption')
         return parser.parse_args()
@@ -46,7 +45,7 @@ class EncryptorDecryptor:
                 keys = file.read()
         else:
             print('Key encryption not exists')
-            quit()
+            exit()
         return keys.split(b' - ')[0:-1]
 
     def encryptData(self, file_name):
@@ -54,13 +53,14 @@ class EncryptorDecryptor:
             file_data = file.read()
         new_file_data = b''
         file_size = sys.getsizeof(file_data)
-        for i in range(0, len(file_data), self.chunk_size):
-            data = file_data[i:i+self.chunk_size]
+        chunk_size = self.chunk_size if self.chunk_size < len(file_data) else len(file_data)-1 
+        for i in range(0, len(file_data), chunk_size):
+            data = file_data[i:i+chunk_size]
             for key in self.keys:
                 fernet = Fernet(key)
                 data = fernet.encrypt(data)
-                time.sleep(file_size / 100000000)
             new_file_data += data
+            time.sleep(file_size / (100  * 1024 * 1024))
         with open(file_name, 'wb') as new_file:
             new_file.write(new_file_data)
 
@@ -69,13 +69,14 @@ class EncryptorDecryptor:
             file_data = file.read()
         new_file_data = b''
         file_size = sys.getsizeof(file_data)
-        for i in range(0, len(file_data), self.chunk_size):
-            data = file_data[i:i+self.chunk_size]
+        chunk_size = self.chunk_size if self.chunk_size < len(file_data) else len(file_data)
+        for i in range(0, len(file_data), chunk_size):
+            data = file_data[i:i+chunk_size]
             for key in reversed(self.keys):
                 fernet = Fernet(key)
                 data = fernet.decrypt(data)
-                time.sleep(file_size / 100000000)
             new_file_data += data
+            time.sleep(file_size / (100  * 1024 * 1024))
         with open(file_name, 'wb') as new_file:
             new_file.write(new_file_data)
 
@@ -110,6 +111,6 @@ if __name__ == '__main__':
         #                     elif self.mode == 'decrypt':
         #                         executor.submit(self.decryptData, data)
         #             print(self.new_file_data, self.key)
-        #             quit()
+        #             exit()
         #             with open(filename, 'wb') as new_file:
         #                 new_file.write(self.new_file_data)
